@@ -15,15 +15,24 @@ def detect_emission(data, coef=1.5):
     Возвращает:
         (pandas.Series) - Ряд из True/False, где True - это выброс
     """
+
+    # Удаление пустых значений
+    clean_data = data.dropna()
+
     # Определение границ
-    Q1 = data.quantile(0.25)
-    Q3 = data.quantile(0.75)
+    Q1 = clean_data.quantile(0.25)
+    Q3 = clean_data.quantile(0.75)
     IQR = Q3 - Q1
     lower = Q1 - coef * IQR
     upper = Q3 + coef * IQR
 
     # Числа вне границ являются выбросами
-    return (data < lower) | (data > upper)
+    emissions = (data < lower) | (data > upper)
+
+    # Пустые значения не являются выбросами
+    emissions[data.isna()] = False
+    
+    return emissions
 
 
 def create_graph(data, emissions, yname):
