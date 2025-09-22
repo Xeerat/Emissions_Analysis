@@ -1,18 +1,19 @@
 import matplotlib.pyplot as plt
 # load_boston() устарел и больше не используется
 from sklearn.datasets import fetch_california_housing
+import pandas as pd
 
 
 def detect_emission(data, coef=1.5):
     """
-    Поиск выбросов по методу IQR.
+    Функция для поиска выбросов по методу IQR.
 
     Входные данные:
-        data (pandas.Series) -  ряд чисел
-        coef (float) - Коэффициент для IQR. По умолчанию 1.5.
+        data (pandas.Series) -  Ряд чисел по которым определяются границы
+        coef (float) - Коэффициент для IQR. Значение по классическому правилу равно 1.5
 
     Возвращает:
-        (pandas.Series) - ряд из True/False, где True - это выброс
+        (pandas.Series) - Ряд из True/False, где True - это выброс
     """
     # Определение границ
     Q1 = data.quantile(0.25)
@@ -25,13 +26,14 @@ def detect_emission(data, coef=1.5):
     return (data < lower) | (data > upper)
 
 
-def create_graph(data, emissions):
+def create_graph(data, emissions, yname):
     """
-    Создает график с выделением выбросов
+    Функция для создания графика с выделением выбросов
 
     Входные данные :
-        data (pandas.Series) - ряд чисел, по которым строиться график.
-        emissions (pandas.Series) - ряд из True/False, где True — выброс.
+        data (pandas.Series) - Ряд чисел, по которым строиться график.
+        emissions (pandas.Series) - Ряд из True/False, где True — выброс.
+        yname (str) - Название признака
 
     Возвращает:
         Ничего, только строит график
@@ -40,7 +42,7 @@ def create_graph(data, emissions):
     plt.scatter(range(len(data[emissions])), data[emissions], color="red", label="Выбросы")
     plt.scatter(range(len(data[~emissions])), data[~emissions])
     plt.xlabel("Географические зоны Калифорнии")
-    plt.ylabel("Медианный доход")
+    plt.ylabel(yname)
     plt.title("Выбросы по IQR")
     plt.legend()
     plt.show()
@@ -50,8 +52,27 @@ def main():
     # Загружаем данные сразу в виде DataFrame
     data = fetch_california_housing(as_frame=True).frame
 
+    print("Доступные признаки:", ", ".join(data.columns))
+
+    # Ввод признака
+    while True:
+        name = input("Введите название признака ")
+        if name in data.columns:
+            break
+        print("Неправильное название признака. Попробуйте еще раз.")
+
     # Берём медианный доход
-    med = data["MedInc"]
+    med = data[name]
+
+    # Проверка на пустые значения
+    if med.isna().all():
+        print("В выбранном признаке все значения отсутствуют")
+        return
+
+    # Проверка типа данных
+    if not med.dtype.kind in "if":
+        print("Для поиска выбросов данные должны быть числовыми")
+        return
 
     # Находим выбросы по признаку
     # Выбросы обозначены как True, все остальное False
@@ -59,17 +80,12 @@ def main():
     if emissions.sum() == 0:
         print("Выбросов не найдено")
         return
-
+    
     # Вывод выбросов
     print(med[emissions])
-
-    # Проверка типа данных
-    if not med.dtype.kind in "if":
-        print("Для построения графика данные должны быть числовыми")
-        return
     
     # Построение графика
-    create_graph(med, emissions)
+    create_graph(med, emissions, name)
 
 
 if __name__ == "__main__":
