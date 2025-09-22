@@ -52,16 +52,15 @@ def main():
     # Загружаем данные сразу в виде DataFrame
     data = fetch_california_housing(as_frame=True).frame
 
-    print("Доступные признаки:", ", ".join(data.columns))
-
     # Ввод признака
+    print("Доступные признаки:", ", ".join(data.columns))
     while True:
         name = input("Введите название признака ")
         if name in data.columns:
             break
         print("Неправильное название признака. Попробуйте еще раз.")
 
-    # Берём медианный доход
+    # Берем данные по признаку
     med = data[name]
 
     # Проверка на пустые значения
