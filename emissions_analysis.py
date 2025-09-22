@@ -46,6 +46,8 @@ def create_graph(data, emissions, yname):
     plt.title("Выбросы по IQR")
     plt.legend()
     plt.show()
+    
+    return
 
 
 def main():
@@ -55,7 +57,7 @@ def main():
     # Ввод признака
     print("Доступные признаки:", ", ".join(data.columns))
     while True:
-        name = input("Введите название признака ")
+        name = input("Введите название признака: ")
         if name in data.columns:
             break
         print("Неправильное название признака. Попробуйте еще раз.")
@@ -80,11 +82,15 @@ def main():
         print("Выбросов не найдено")
         return
     
-    # Вывод выбросов
-    print(med[emissions])
+    # Сохранение выбросов
+    with open("emissions.txt", "w") as file:
+        for i in med[emissions]:
+            file.write(str(i) + "\n")
     
     # Построение графика
     create_graph(med, emissions, name)
+
+    return
 
 
 if __name__ == "__main__":
